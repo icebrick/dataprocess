@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 
+import time
 import tkinter as tk
 import matplotlib
 from functools import wraps
-import time
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+
 from data_process import data_storage
 from data_process import data_plot
 
@@ -28,7 +29,8 @@ class Application(tk.Frame):
         tk.Frame.__init__(self, master)
         self.grid()
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
-        file_name = 'ft_data.txt'
+        # file_name = 'ft_data.txt'
+        file_name = 'data/FTPD-C919-10101-PD-170928-F-01-CAOWEN-429002-16.txt'
         self.data_storage = data_storage.DataStorage(file_name)
         self.data_plt = data_plot.DataPlot(self.data_storage)
         self.var_name_list = self.data_storage.get_head_title()
@@ -52,11 +54,8 @@ class Application(tk.Frame):
         self.button = tk.Button(self, text='Plot', command=self.plot_var)
         self.button.grid(row=2,column=0, sticky=tk.E+tk.W)
 
-
-
     def var_list(self):
         # List widget for show all the variable names
-
         # Get the variable names
         var_names = tk.StringVar()
         var_names.set(' '.join(self.var_name_list))
@@ -75,7 +74,6 @@ class Application(tk.Frame):
     @timethis
     def plot_init(self):
         fig = plt.figure(1)
-
         canvas = FigureCanvasTkAgg(fig, master=self)
         canvas.show()
         plot_widget = canvas.get_tk_widget()
@@ -87,7 +85,6 @@ class Application(tk.Frame):
 
     @timethis
     def plot_var(self):
-
         self.plt.clf()
         plt.grid(b=True)
         line_handles = list()
@@ -100,8 +97,7 @@ class Application(tk.Frame):
             var_name = self.var_name_list[index]
             var_names_selected.append(var_name)
 
-
-            time = self.data_storage.extract_data('time')
+            time = self.data_storage.extract_data('time_sec')
             data = self.data_storage.extract_data(var_name)
 
             ratio = 1000
@@ -119,11 +115,6 @@ class Application(tk.Frame):
         # toolbar = NavigationToolbar2TkAgg(canvas, self)
         # toolbar.update()
         # canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-
-
-
-
 
 app = Application()
 app.master.title('Sample Application by Jayden')

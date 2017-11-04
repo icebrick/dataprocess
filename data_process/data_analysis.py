@@ -16,5 +16,12 @@ def timethis(func):
         return r
     return wrapper
 
-class DataAnalysis(object):
-    pass
+class DataProcess(object):
+    def __init__(self):
+        pass
+
+    def transfer_mat(self):
+        '''Transfer the variables data which stored in database to
+        Matlab type(.mat) files'''
+
+

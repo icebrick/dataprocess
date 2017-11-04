@@ -27,7 +27,7 @@ class DataPlot(object):
     @timethis
     def plot_var_no_process(self, var_name, ratio=1):
         # get the data from pool or database
-        time = self.data_ins.extract_data('time')
+        time = self.data_ins.extract_data('time_sec')
         var = self.data_ins.extract_data(var_name)
         # slim the data according to the ratio
         time = self.data_ins.slim_data(time, ratio)
@@ -48,7 +48,7 @@ class DataPlot(object):
     @timethis
     def plot_var_multi_no_process(self, var_name_list, ratio=1):
         var_len = len(var_name_list)
-        time = self.data_ins.extract_data('time')
+        time = self.data_ins.extract_data('time_sec')
         time = self.data_ins.slim_data(time, ratio)
         for index, var_name in enumerate(var_name_list):
             var = self.data_ins.extract_data(var_name)

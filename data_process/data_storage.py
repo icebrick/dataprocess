@@ -3,6 +3,7 @@
 
 from builtins import object
 from functools import wraps
+import os
 import re
 import time
 import collections
@@ -28,8 +29,25 @@ class DataStorage(object):
             head_str = f.readline()
             self.head_list = head_str.replace("-", "_").split()
             self.head_str = ','.join(self.head_list)
-            self.table_name = self.file_name.replace("-", "_").split(".")[0]
+            self.table_name = os.path.basename(self.file_name.replace("-", "_")).split(".")[0]
             self.data_pool = collections.OrderedDict()
+            # get the initial time of data, the format is local Beijing time: hh:mm:ss:xxx
+            data_line = f.readline()
+            self.init_time_str = data_line.split()[0]
+        self.check_time_type()
+        if self.time_type == 'time_string':
+            self.head_list.append('time_sec')
+            self.head_str += ', time_sec'
+
+    def time_delta(self, begin_time, end_time):
+        '''calculate the delta seconds between two time string'''
+        b_t = begin_time.split(':')
+        e_t = end_time.split(':')
+        for i,_ in enumerate(b_t):
+            b_t[i] = int(b_t[i])
+            e_t[i] = int(e_t[i])
+        delta = (e_t[0] - b_t[0])*60*60 + (e_t[1] - b_t[1])*60 + (e_t[2] - b_t[2])*1 + (e_t[3] - b_t[3])*0.001
+        return str(delta)
 
     # set the data pool cache to aviod extract from database frequency
     def data_pool_set(self, var_name, data):
@@ -50,7 +68,7 @@ class DataStorage(object):
     @timethis
     def connect_db(self, db_name):
         # perform the connection to database
-        db = mysql.connect(host='localhost', user='root', passwd='jiandan313', db=db_name)
+        db = mysql.connect(host='localhost', user='root', passwd='1234', db=db_name)
         cursor = db.cursor()
         print("Connect to database: {}".format(db_name))
         return db, cursor
@@ -59,13 +77,13 @@ class DataStorage(object):
     @timethis
     def cr_db_tb(self):
         # connect to the database
-        db, cursor = self.connect_db('DBTest')
+        db, cursor = self.connect_db('ftdata')
         self.check_time_type()
         # create db table with variable name as column name
         # cmd_str_part = ','.join(["{} float".format(i_head) for i_head in self.head_list])
         cmd_list_part = ["{} float".format(i_head) for i_head in self.head_list]
         if self.time_type == 'time_string':
-            cmd_list_part[0] = cmd_list_part[0].replace('float', 'TIME(3)')
+            cmd_list_part[0] = cmd_list_part[0].replace('float', 'varchar(20)')
         cmd_str_part = ','.join(cmd_list_part)
         cmd_str = "CREATE TABLE IF NOT EXISTS {} ({});".format(self.table_name, cmd_str_part)
         # execute the command
@@ -86,7 +104,7 @@ class DataStorage(object):
 
     @timethis
     def insert_data_db(self):
-        db, cursor = self.connect_db('DBTest')
+        db, cursor = self.connect_db('ftdata')
 
         with open(self.file_name, 'r') as f:
             # skip the head line
@@ -97,7 +115,7 @@ class DataStorage(object):
                     data_line = data_line.split()
                     # transfer the time HH:MM:SS:sss to HH:MM:SS.sss for mysql time column requirement
                     if self.time_type == 'time_string':
-                        data_line[0] = re.sub(':', '.', data_line[0][::-1], count=1)[::-1]
+                        data_line.append(self.time_delta(self.init_time_str, data_line[0]))
                         # make the time str to str when it is in sql cmd
                         data_line[0] = '"'+data_line[0]+'"'
                     data_line = ','.join(data_line)
@@ -111,7 +129,7 @@ class DataStorage(object):
             print('Insert data to db succeed')
 
     def get_head_title(self):
-        db, cursor = self.connect_db('DBTest')
+        db, cursor = self.connect_db('ftdata')
         cmd_str = "SELECT * FROM {} LIMIT 1".format(self.table_name)
         cursor.execute(cmd_str)
         # get the column head info
@@ -132,7 +150,7 @@ class DataStorage(object):
             print("Extract data {} succeed!".format(var_name))
             return data
         # Else, we need to get it from the database
-        db, cursor = self.connect_db('DBTest')
+        db, cursor = self.connect_db('ftdata')
         cmd_str = "SELECT {} FROM {};".format(var_name, self.table_name)
         cursor.execute(cmd_str)
         data = cursor.fetchall()
@@ -184,3 +202,4 @@ class DataStorage(object):
 # file.plot_var('var10', 1000)
 # file.plot_var('var5', 1000)
 # file.plot_var_multi(('var1', 'var2', 'var3'), 1000)
+
