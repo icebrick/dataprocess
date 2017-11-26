@@ -99,12 +99,11 @@ class Application(tk.Frame):
             time = self.dbhub.get_var('Time_added')
             data = self.dbhub.get_var(var_name)
 
-            h = self.plt.plot(time, data)
-            line_handles.append(h)
-        self.plt.xlabel('t/s')
+            plt.plot(time, data, label=var_name)
+        plt.legend()
+        plt.show()
         # self.plt.ylabel(var_name)
         # self.plt.figlegend(line_handles, var_names_selected, "upper right")
-        self.fig.canvas.draw()
         #
         # toolbar = NavigationToolbar2TkAgg(canvas, self)
         # toolbar.update()
