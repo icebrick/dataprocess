@@ -1,23 +1,27 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-t = np.arange(0.01, 5.0, 0.01)
+t = np.arange(0.0, 2.0, 0.01)
+
 s1 = np.sin(2 * np.pi * t)
 s2 = np.exp(-t)
-s3 = np.sin(4 * np.pi * t)
+s3 = s1 * s2
 
-ax1 = plt.subplot(311)
-plt.plot(t, s1)
-plt.setp(ax1.get_xticklabels(), fontsize=6)
+fig, axs = plt.subplots(3, 1, sharex=True)
+# Remove horizontal space between axes
+fig.subplots_adjust(hspace=0)
 
-# share x only
-ax2 = plt.subplot(312, sharex=ax1)
-plt.plot(t, s2)
-# make these tick labels invisible
-plt.setp(ax2.get_xticklabels(), visible=False)
+# Plot each graph, and manually set the y tick values
+axs[0].plot(t, s1)
+axs[0].set_yticks(np.arange(-0.9, 1.0, 0.4))
+axs[0].set_ylim(-1, 1)
 
-# share x and y
-ax3 = plt.subplot(313, sharex=ax1, sharey=ax1)
-plt.plot(t, s3)
-plt.xlim(0.01, 5.0)
+axs[1].plot(t, s2)
+axs[1].set_yticks(np.arange(0.1, 1.0, 0.2))
+axs[1].set_ylim(0, 1)
+
+axs[2].plot(t, s3)
+axs[2].set_yticks(np.arange(-0.9, 1.0, 0.4))
+axs[2].set_ylim(-1, 1)
+
 plt.show()

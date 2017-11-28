@@ -53,6 +53,9 @@ class Application(tk.Frame):
         self.button = tk.Button(self, text='Plot', command=self.plot_var)
         self.button.grid(row=2,column=0, sticky=tk.E+tk.W)
 
+        self.button_link= tk.Button(self, text='Link Plot', command=self.plot_link2)
+        self.button_link.grid(row=3,column=0,sticky=tk.E+tk.W)
+
     def var_list(self):
         # List widget for show all the variable names
         # Get the variable names
@@ -108,6 +111,54 @@ class Application(tk.Frame):
         # toolbar = NavigationToolbar2TkAgg(canvas, self)
         # toolbar.update()
         # canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    def plot_link(self):
+        self.plt.clf()
+        line_handles = list()
+        var_names_selected = list()
+
+        var_index = self.list.curselection()
+        if not var_index:
+            return
+        for i_plot, index in enumerate(var_index):
+            var_name = self.var_name_list[index]
+            var_names_selected.append(var_name)
+
+            time = self.dbhub.get_var('Time_added')
+            data = self.dbhub.get_var(var_name)
+
+            # link the x axis for all subplot
+            sub_str = str(len(var_index)) + '1' + str(i_plot+1)
+            if not i_plot:
+                ax1 = plt.subplot(sub_str)
+            else:
+                plt.subplot(sub_str, sharex=ax1)
+            plt.plot(time, data, label=var_name)
+            plt.grid(b=True)
+            plt.legend()
+        plt.show()
+
+    def plot_link2(self):
+        # self.plt.clf()
+        line_handles = list()
+        var_names_selected = list()
+
+        var_index = self.list.curselection()
+        if not var_index:
+            return
+        fig, axs = plt.subplots(len(var_index), 1, sharex=True)
+        fig.subplots_adjust(hspace=0)
+        for i_plot, index in enumerate(var_index):
+            var_name = self.var_name_list[index]
+            var_names_selected.append(var_name)
+
+            time = self.dbhub.get_var('Time_added')
+            data = self.dbhub.get_var(var_name)
+
+            # link the x axis for all subplot
+            axs[i_plot].plot(time, data, label=var_name)
+            axs[i_plot].grid(b=True)
+            axs[i_plot].legend()
+        plt.show()
 
 app = Application()
 app.master.title('Sample Application by Jayden')
